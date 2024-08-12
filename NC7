@@ -1,0 +1,65 @@
+-- تعيين الـ Services
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+
+-- وظيفة لإظهار إشعار
+local function showNotification(title, text)
+    StarterGui:SetCore("SendNotification", {
+        Title = title;
+        Text = text;
+        Duration = 5; -- مدة ظهور الإشعار بالثواني
+    })
+end
+
+-- وظيفة لتسليط الضوء على اللاعبين
+local function highlightPlayers()
+    -- تنظيف أي تسليط ضوء موجود مسبقاً
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.Character and player.Character:FindFirstChild("Highlight") then
+            player.Character.Highlight:Destroy()
+        end
+    end
+
+    -- إضافة تسليط الضوء لكل لاعب
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.Character then
+            local highlight = Instance.new("Highlight")
+            highlight.Parent = player.Character
+            highlight.Adornee = player.Character
+            highlight.Name = "Highlight"
+        end
+    end
+end
+
+-- وظيفة لإزالة تسليط الضوء عند وفاة اللاعب
+local function onPlayerCharacterAdded(character)
+    -- التأكد من وجود تسليط الضوء وازالته عند وفاة اللاعب
+    if character:FindFirstChild("Highlight") then
+        character:FindFirstChild("Highlight"):Destroy()
+    end
+    
+    -- إضافة تسليط الضوء عند إضافة الشخصية
+    local highlight = Instance.new("Highlight")
+    highlight.Parent = character
+    highlight.Adornee = character
+    highlight.Name = "Highlight"
+end
+
+-- تعيين وظيفة وفاة الشخصية لكل لاعب
+local function onPlayerAdded(player)
+    player.CharacterAdded:Connect(onPlayerCharacterAdded)
+end
+
+-- تسجيل جميع اللاعبين عند بدء اللعبة
+for _, player in pairs(Players:GetPlayers()) do
+    onPlayerAdded(player)
+end
+
+-- تسجيل اللاعبين الجدد الذين ينضمون بعد بدء اللعبة
+Players.PlayerAdded:Connect(onPlayerAdded)
+
+-- تسليط الضوء على اللاعبين الحاليين
+highlightPlayers()
+
+-- إظهار الإشعار عند تشغيل السكربت
+showNotification("Credit", "Made By NMC Discord")
